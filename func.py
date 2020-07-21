@@ -10,6 +10,7 @@ from fdk import response
 compartment_id = 'ocid1.tenancy.oc1..aaaaaaaaqqzek25x6oc72fsf7pl5pxqipakzcual27u6db3njlq76p7jopna'
 bucket_name = 'policy_log'
 policy_name = 'politicapersonalizada'
+quota_name = 'zerarconsumo'
 
 
 def save_log(signer, body):
@@ -51,9 +52,9 @@ def create_policy(signer):
         new_pol = CreatePolicyDetails()
         new_pol.compartment_id = compartment_id
         new_pol.name = policy_name
-        new_pol.description = "teste do teste"
-        xpto_rule = "Allow dynamic-group exemplo to manage all-resources IN TENANCY"
-        statements = [xpto_rule]
+        new_pol.description = "exemplo de politica"
+        statement = "Allow dynamic-group exemplo to manage all-resources IN TENANCY"
+        statements = [statement]
         new_pol.statements = statements
         identity.create_policy(new_pol)
         resp = { 'policies': 'politica {} criada com sucesso'.format(new_pol.name) }
@@ -64,7 +65,7 @@ def create_policy(signer):
 def handler(ctx, data: io.BytesIO=None):
     signer = oci.auth.signers.get_resource_principals_signer()
     resp_policy = create_policy(signer)
-    resp_quota = zero_quota(signer, 'new_quota', 'testing')
+    resp_quota = zero_quota(signer, quota_name, 'exemplo de quota')
     resp = {'policies' : resp_policy, 'quotas' : resp_quota}
     save_log(signer, resp)
     return response.Response(
