@@ -56,7 +56,7 @@ def create_quota(signer, budget, alert):
     return response
 
 
-def create_alert(budget_client, alert_rule):  
+def create_alert(budget_client, alert_rule):
     budget_client.delete_alert_rule(alert_rule[1].budget_id, alert_rule[1].id)
     rule_detail = oci.budget.models.CreateAlertRuleDetails()
     rule_detail.threshold = float(alert_rule[1].threshold) 
@@ -75,8 +75,13 @@ def handler(ctx, data: io.BytesIO=None):
                 alerts = budget_client.list_alert_rules(budget.id).data
                 if (len(alerts) != 0):
                     for alert in enumerate(alerts):
-                        create_alert(budget_client, alert)
-                        resp = create_quota(signer, budget, alert)
+                        if (int(alert[1].threshold) == 1):
+                            budget_client.delete_alert_rule(alert[1].budget_id, alert[1].id)
+                            delete_quota(signer)
+                            resp = {'Budgets Alert Rules and Quota': 'deleted! '}
+                        else:
+                            create_alert(budget_client, alert)
+                            resp = create_quota(signer, budget, alert)
                 else:
                     resp = {'Budgets Alert Rules': 'no alerts created'}
                     delete_quota(signer)
